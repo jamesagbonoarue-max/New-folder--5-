@@ -50,6 +50,7 @@ const shouldRetryWithFallback = (error) => {
 
 const requestWithFallback = async (method, url, payload, config = {}) => {
   let currentUrl = url;
+  console.log('[frontend-api]', { method: method.toUpperCase(), requestedUrl: currentUrl, apiBases: API_BASES, frontendOrigin: FRONTEND_ORIGIN });
 
   for (let index = 0; index < API_BASES.length; index += 1) {
     const base = API_BASES[index];
@@ -57,13 +58,39 @@ const requestWithFallback = async (method, url, payload, config = {}) => {
       ? currentUrl.replace(/^https?:\/\/[^/]+/, base)
       : `${base}${currentUrl.startsWith('/') ? currentUrl : `/${currentUrl}`}`;
 
+    console.log('[frontend-api-attempt]', { attempt: index + 1, url: requestUrl, base });
+
     try {
-      if (method === 'get') return await originalAxiosMethods.get(requestUrl, config);
-      if (method === 'post') return await originalAxiosMethods.post(requestUrl, payload, config);
-      if (method === 'put') return await originalAxiosMethods.put(requestUrl, payload, config);
-      if (method === 'patch') return await originalAxiosMethods.patch(requestUrl, payload, config);
-      return await originalAxiosMethods.delete(requestUrl, config);
+      if (method === 'get') {
+        const response = await originalAxiosMethods.get(requestUrl, config);
+        console.log('[frontend-api-success]', { url: requestUrl, status: response?.status });
+        return response;
+      }
+      if (method === 'post') {
+        const response = await originalAxiosMethods.post(requestUrl, payload, config);
+        console.log('[frontend-api-success]', { url: requestUrl, status: response?.status });
+        return response;
+      }
+      if (method === 'put') {
+        const response = await originalAxiosMethods.put(requestUrl, payload, config);
+        console.log('[frontend-api-success]', { url: requestUrl, status: response?.status });
+        return response;
+      }
+      if (method === 'patch') {
+        const response = await originalAxiosMethods.patch(requestUrl, payload, config);
+        console.log('[frontend-api-success]', { url: requestUrl, status: response?.status });
+        return response;
+      }
+      const response = await originalAxiosMethods.delete(requestUrl, config);
+      console.log('[frontend-api-success]', { url: requestUrl, status: response?.status });
+      return response;
     } catch (error) {
+      console.error('[frontend-api-error]', {
+        url: requestUrl,
+        status: error?.response?.status,
+        message: error?.message,
+        data: error?.response?.data,
+      });
       if (!shouldRetryWithFallback(error) || index === API_BASES.length - 1) {
         throw error;
       }

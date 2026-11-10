@@ -52,6 +52,7 @@ const isAllowedOrigin = (origin) => {
 
 app.use(cors({
   origin(origin, callback) {
+    console.log('[backend-cors]', { origin, allowedOrigins, allowed: !origin ? 'no-origin' : isAllowedOrigin(origin) });
     if (!origin || isAllowedOrigin(origin)) return callback(null, true);
     return callback(new Error('Origin is not allowed by CORS.'));
   },
@@ -84,7 +85,13 @@ app.use('/api/announcements', announcementRoutes);
 app.use('/api/uploads', uploadRoutes);
 
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('[backend-error]', {
+    method: req.method,
+    url: req.originalUrl,
+    status: err.statusCode || (err.name === 'MulterError' ? 400 : 500),
+    message: err.message,
+    stack: err.stack,
+  });
   const status = err.statusCode || (err.name === 'MulterError' ? 400 : 500);
   res.status(status).json({ message: status === 500 ? 'Something went wrong on the server.' : err.message });
 });

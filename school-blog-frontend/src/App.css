@@ -5,7 +5,7 @@
 
 .site-header {
   position: sticky;
-  top: 0;
+  top: 0.0px;
   z-index: 50;
   background: rgba(255, 253, 247, 0.94);
   border-bottom: 1px solid rgba(21, 58, 50, 0.09);

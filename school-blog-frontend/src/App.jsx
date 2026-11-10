@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import './App.css';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://new-folder-5-olcz.onrender.com/api';
 axios.defaults.withCredentials = true;
 
 const formatDate = (value) => {

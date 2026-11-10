@@ -24,18 +24,26 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const HOST = process.env.HOST || '0.0.0.0';
 
-const allowedOrigin = process.env.CLIENT_URL || 'http://localhost:5173';
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  'https://school-blog-app.vercel.app/',
+  'http://localhost:5173',
+  'http://localhost:5174',
+].filter(Boolean).map((origin) => origin.replace(/\/+$/, ''));
+
 const isAllowedOrigin = (origin) => {
-  if (origin === allowedOrigin) return true;
+  if (!origin) return false;
+  if (allowedOrigins.includes(origin)) return true;
 
   try {
     const requested = new URL(origin);
-    const configured = new URL(allowedOrigin);
-    const loopbackHosts = new Set(['localhost', '127.0.0.1', '[::1]']);
-    return requested.protocol === configured.protocol &&
-      requested.port === configured.port &&
-      loopbackHosts.has(requested.hostname) &&
-      loopbackHosts.has(configured.hostname);
+    return allowedOrigins.some((configuredOrigin) => {
+      const configured = new URL(configuredOrigin);
+      const loopbackHosts = new Set(['localhost', '127.0.0.1', '[::1]']);
+      return requested.protocol === configured.protocol &&
+        requested.hostname === configured.hostname &&
+        requested.port === configured.port;
+    });
   } catch {
     return false;
   }

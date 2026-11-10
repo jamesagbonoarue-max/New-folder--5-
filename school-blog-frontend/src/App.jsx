@@ -27,9 +27,9 @@ import {
 } from 'lucide-react';
 import './App.css';
 
-const API_BASE_FALLBACK = 'https://new-folder-5-olcz.onrender.com/api';
-const API_BASES = [import.meta.env.VITE_API_URL?.replace(/\/+$/, ''), API_BASE_FALLBACK].filter(Boolean);
-const API_BASE = API_BASES[0] || API_BASE_FALLBACK;
+const MANUAL_BACKEND_URL = 'https://new-folder-5-olcz.onrender.com/api';
+const API_BASES = [MANUAL_BACKEND_URL, import.meta.env.VITE_API_URL].filter(Boolean).map((base) => base.replace(/\/+$/, ''));
+const API_BASE = API_BASES[0] || MANUAL_BACKEND_URL;
 
 const originalAxiosMethods = {
   get: axios.get.bind(axios),

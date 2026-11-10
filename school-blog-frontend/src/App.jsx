@@ -27,10 +27,15 @@ import {
 } from 'lucide-react';
 import './App.css';
 
-const MANUAL_BACKEND_URL = 'https://new-folder-5-olcz.onrender.com/api';
+const MANUAL_BACKEND_URL = 'https://new-folder-5-olcz.onrender.com';
 const VERCEL_FRONTEND_URL = 'https://school-blog-app.vercel.app';
-const API_BASES = [MANUAL_BACKEND_URL, import.meta.env.VITE_API_URL, `${MANUAL_BACKEND_URL}`].filter(Boolean).map((base) => base.replace(/\/+$/, ''));
-const API_BASE = API_BASES[0] || MANUAL_BACKEND_URL;
+const normalizeApiBase = (value) => {
+  const trimmed = String(value || '').replace(/\/+$/, '');
+  if (!trimmed) return 'https://new-folder-5-olcz.onrender.com/api';
+  return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+};
+const API_BASES = [MANUAL_BACKEND_URL, import.meta.env.VITE_API_URL].filter(Boolean).map(normalizeApiBase);
+const API_BASE = API_BASES[0] || 'https://new-folder-5-olcz.onrender.com/api';
 
 const FRONTEND_ORIGIN = process.env.VITE_FRONTEND_URL || VERCEL_FRONTEND_URL;
 
@@ -48,15 +53,29 @@ const shouldRetryWithFallback = (error) => {
   return !error.response || error.response.status === 0 || error.code === 'ERR_NETWORK' || message.includes('Network Error') || message.includes('Failed to fetch');
 };
 
+const buildRequestUrl = (base, requestedUrl) => {
+  const normalizedBase = String(base || '').replace(/\/+$/, '');
+  const rawUrl = String(requestedUrl || '').trim();
+
+  if (!rawUrl) return normalizedBase;
+
+  if (/^https?:\/\//i.test(rawUrl)) {
+    const parsed = new URL(rawUrl);
+    const normalizedPath = parsed.pathname.replace(/^\/+api\/+/, '/');
+    return `${normalizedBase}${normalizedPath.startsWith('/') ? normalizedPath : `/${normalizedPath}`}${parsed.search}`;
+  }
+
+  const normalizedPath = rawUrl.replace(/^\/+api\/+/, '/');
+  return `${normalizedBase}${normalizedPath.startsWith('/') ? normalizedPath : `/${normalizedPath}`}`;
+};
+
 const requestWithFallback = async (method, url, payload, config = {}) => {
   let currentUrl = url;
   console.log('[frontend-api]', { method: method.toUpperCase(), requestedUrl: currentUrl, apiBases: API_BASES, frontendOrigin: FRONTEND_ORIGIN });
 
   for (let index = 0; index < API_BASES.length; index += 1) {
     const base = API_BASES[index];
-    const requestUrl = currentUrl.startsWith('http')
-      ? currentUrl.replace(/^https?:\/\/[^/]+/, base)
-      : `${base}${currentUrl.startsWith('/') ? currentUrl : `/${currentUrl}`}`;
+    const requestUrl = buildRequestUrl(base, currentUrl);
 
     console.log('[frontend-api-attempt]', { attempt: index + 1, url: requestUrl, base });
 

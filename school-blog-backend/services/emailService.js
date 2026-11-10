@@ -1,7 +1,10 @@
-const isEmailConfigured = () => Boolean(
-  process.env.BREVO_API_KEY &&
-  (process.env.EMAIL_FROM_EMAIL || process.env.EMAIL_FROM)
-);
+const isEmailConfigured = () => {
+  const senderEmail = String(process.env.EMAIL_FROM_EMAIL || '').trim();
+  return Boolean(
+    process.env.BREVO_API_KEY &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderEmail)
+  );
+};
 
 const escapeHtml = (value) => String(value)
   .replace(/&/g, '&amp;')
@@ -26,8 +29,8 @@ const sendBrevoEmail = async ({ email, subject, textContent, htmlContent }) => {
       },
       body: JSON.stringify({
         sender: {
-          name: process.env.EMAIL_FROM_NAME || 'DE GUNIUS TALENT',
-          email: process.env.EMAIL_FROM_EMAIL || process.env.EMAIL_FROM,
+          name: process.env.EMAIL_FROM_NAME || 'DE GENIUS TALENTS INTERNATIONAL SCHOOL',
+          email: process.env.EMAIL_FROM_EMAIL.trim(),
         },
         to: [{ email }],
         subject,
@@ -61,7 +64,7 @@ const sendBrevoEmail = async ({ email, subject, textContent, htmlContent }) => {
 
 const sendPasswordResetEmail = async (email, code) => {
   const textContent = [
-    'THE JUNIOR TALENT password recovery',
+    'De Genius Talents International School password recovery',
     'A password reset was requested for your administrator account.',
     `Your verification code is: ${code}`,
     'This code expires in 10 minutes.',
@@ -76,7 +79,7 @@ const sendPasswordResetEmail = async (email, code) => {
   </head>
   <body style="margin:0;padding:24px;background:#f3f5f0;font-family:Arial,Helvetica,sans-serif;color:#18372f;">
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;margin:0 auto;background:#fffefa;border:1px solid #e1e8df;border-radius:16px;overflow:hidden;">
-      <tr><td style="padding:28px 32px;background:#18372f;color:#fffefa;font-size:20px;font-weight:700;">DE GUNIUS TALENTS</td></tr>
+      <tr><td style="padding:28px 32px;background:#18372f;color:#fffefa;font-size:20px;font-weight:700;">DE GENIUS TALENTS</td></tr>
       <tr><td style="padding:32px;">
         <p style="margin:0 0 12px;font-size:16px;">Hello,</p>
         <h1 style="margin:0 0 16px;font-size:25px;line-height:1.3;color:#18372f;">Password recovery</h1>
@@ -91,17 +94,17 @@ const sendPasswordResetEmail = async (email, code) => {
 
   await sendBrevoEmail({
     email,
-    subject: 'THE JUNIOR TALENT - Password Reset Verification Code',
+    subject: 'De Genius Talents International School - Password Reset Code',
     textContent,
     htmlContent,
   });
 };
 
-const sendAdminWelcomeEmail = async ({ name, email, username, password }) => {
+const sendAdminWelcomeEmail = async ({ name, email, username }) => {
   const loginUrl = `${(process.env.CLIENT_URL || 'http://localhost:5173').replace(/\/+$/, '')}/admin`;
   const fullName = String(name);
   const identifier = `${email} / ${username}`;
-  const subject = 'Your THE JUNIOR TALENT Administrator Account Details';
+  const subject = 'De Genius Talents International School - Administrator Account';
   const textContent = [
     `Hello ${fullName},`,
     '',
@@ -110,19 +113,18 @@ const sendAdminWelcomeEmail = async ({ name, email, username, password }) => {
     'Your login details:',
     `Name: ${fullName}`,
     `Email/Username: ${identifier}`,
-    `Temporary Password: ${password}`,
     `Admin Login: ${loginUrl}`,
     '',
-    'Please sign in using these details and change your password after your first login.',
+    'For security, no password is included in this email. Use Forgot password on the sign-in page to set your password.',
     '',
-    'DE GUNIUS TALENT Administration Team.',
+    'DE GENIUS TALENTS Administration Team.',
   ].join('\n');
   const htmlContent = `<!doctype html>
 <html lang="en">
   <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Administrator account details</title></head>
   <body style="margin:0;padding:24px;background:#f3f5f0;font-family:Arial,Helvetica,sans-serif;color:#18372f;">
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;margin:0 auto;background:#fffefa;border:1px solid #e1e8df;border-radius:16px;overflow:hidden;">
-      <tr><td style="padding:28px 32px;background:#18372f;color:#fffefa;font-size:20px;font-weight:700;">DE GUNIUS TALENT</td></tr>
+      <tr><td style="padding:28px 32px;background:#18372f;color:#fffefa;font-size:20px;font-weight:700;">DE GENIUS TALENTS</td></tr>
       <tr><td style="padding:32px;">
         <p style="margin:0 0 16px;">Hello ${escapeHtml(fullName)},</p>
         <h1 style="margin:0 0 16px;font-size:25px;line-height:1.3;">Your administrator account is ready</h1>
@@ -130,13 +132,12 @@ const sendAdminWelcomeEmail = async ({ name, email, username, password }) => {
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f1f5ed;border-radius:12px;">
           <tr><td style="padding:18px 20px;line-height:1.8;">
             <strong>Name:</strong> ${escapeHtml(fullName)}<br>
-            <strong>Email/Username:</strong> ${escapeHtml(identifier)}<br>
-            <strong>Temporary Password:</strong> <span style="font-family:monospace;overflow-wrap:anywhere;">${escapeHtml(password)}</span>
+            <strong>Email/Username:</strong> ${escapeHtml(identifier)}
           </td></tr>
         </table>
         <p style="margin:24px 0;text-align:center;"><a href="${escapeHtml(loginUrl)}" style="display:inline-block;padding:13px 22px;background:#426d56;color:#fffefa;text-decoration:none;border-radius:10px;font-weight:700;">Sign in to the admin portal</a></p>
-        <p style="margin:0 0 20px;line-height:1.7;color:#52645a;">Please change your password after your first sign-in.</p>
-        <p style="margin:0;padding-top:20px;border-top:1px solid #e6ebe3;font-size:13px;line-height:1.7;color:#68776e;">DE GUNIUS TALENT Administration Team</p>
+        <p style="margin:0 0 20px;line-height:1.7;color:#52645a;">For security, no password is included in this email. Use <strong>Forgot password?</strong> on the sign-in page to set your password.</p>
+        <p style="margin:0;padding-top:20px;border-top:1px solid #e6ebe3;font-size:13px;line-height:1.7;color:#68776e;">DE GENIUS TALENTS Administration Team</p>
       </td></tr>
     </table>
   </body>

@@ -23,7 +23,7 @@ services:
       - key: EMAIL_FROM_EMAIL
         sync: false
       - key: EMAIL_FROM_NAME
-        value: DE GENIUS TALENTS
+        value: DE GENIUS TALENTS INTERNATIONAL SCHOOL
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
       - key: CLOUDINARY_API_KEY

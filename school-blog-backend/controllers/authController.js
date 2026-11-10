@@ -134,7 +134,6 @@ const createAdmin = async (req, res) => {
         name: admin.name,
         email: admin.email,
         username: admin.username,
-        password: temporaryPassword,
       });
     } catch (error) {
       console.error('Administrator created but welcome email delivery failed:', error.message);

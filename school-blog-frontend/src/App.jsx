@@ -28,8 +28,11 @@ import {
 import './App.css';
 
 const MANUAL_BACKEND_URL = 'https://new-folder-5-olcz.onrender.com/api';
-const API_BASES = [MANUAL_BACKEND_URL, import.meta.env.VITE_API_URL].filter(Boolean).map((base) => base.replace(/\/+$/, ''));
+const VERCEL_FRONTEND_URL = 'https://school-blog-app.vercel.app';
+const API_BASES = [MANUAL_BACKEND_URL, import.meta.env.VITE_API_URL, `${MANUAL_BACKEND_URL}`].filter(Boolean).map((base) => base.replace(/\/+$/, ''));
 const API_BASE = API_BASES[0] || MANUAL_BACKEND_URL;
+
+const FRONTEND_ORIGIN = process.env.VITE_FRONTEND_URL || VERCEL_FRONTEND_URL;
 
 const originalAxiosMethods = {
   get: axios.get.bind(axios),

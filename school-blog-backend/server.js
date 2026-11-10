@@ -26,7 +26,8 @@ const HOST = process.env.HOST || '0.0.0.0';
 
 const allowedOrigins = [
   process.env.CLIENT_URL,
-  'https://school-blog-app.vercel.app/',
+  'https://school-blog-app.vercel.app',
+  'https://new-folder-5-olcz.onrender.com',
   'http://localhost:5173',
   'http://localhost:5174',
 ].filter(Boolean).map((origin) => origin.replace(/\/+$/, ''));

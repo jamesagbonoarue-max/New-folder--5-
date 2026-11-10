@@ -37,7 +37,7 @@ const normalizeApiBase = (value) => {
 const API_BASES = [MANUAL_BACKEND_URL, import.meta.env.VITE_API_URL].filter(Boolean).map(normalizeApiBase);
 const API_BASE = API_BASES[0] || 'https://new-folder-5-olcz.onrender.com/api';
 
-const FRONTEND_ORIGIN = process.env.VITE_FRONTEND_URL || VERCEL_FRONTEND_URL;
+const FRONTEND_ORIGIN = import.meta.env.VITE_FRONTEND_URL || VERCEL_FRONTEND_URL;
 
 const originalAxiosMethods = {
   get: axios.get.bind(axios),

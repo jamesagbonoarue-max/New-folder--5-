@@ -58,7 +58,6 @@ const loginAdmin = async (req, res) => {
       identifier,
       message: error?.message,
       stack: error?.stack,
-      body: req.body,
     });
     return res.status(500).json({ message: 'Unable to authenticate at this time.' });
   }

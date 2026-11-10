@@ -27,7 +27,55 @@ import {
 } from 'lucide-react';
 import './App.css';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://new-folder-5-olcz.onrender.com/api';
+const API_BASE_FALLBACK = 'https://new-folder-5-olcz.onrender.com/api';
+const API_BASES = [import.meta.env.VITE_API_URL?.replace(/\/+$/, ''), API_BASE_FALLBACK].filter(Boolean);
+const API_BASE = API_BASES[0] || API_BASE_FALLBACK;
+
+const originalAxiosMethods = {
+  get: axios.get.bind(axios),
+  post: axios.post.bind(axios),
+  put: axios.put.bind(axios),
+  delete: axios.delete.bind(axios),
+  patch: axios.patch.bind(axios),
+};
+
+const shouldRetryWithFallback = (error) => {
+  if (!error) return false;
+  const message = String(error.message || '');
+  return !error.response || error.response.status === 0 || error.code === 'ERR_NETWORK' || message.includes('Network Error') || message.includes('Failed to fetch');
+};
+
+const requestWithFallback = async (method, url, payload, config = {}) => {
+  let currentUrl = url;
+
+  for (let index = 0; index < API_BASES.length; index += 1) {
+    const base = API_BASES[index];
+    const requestUrl = currentUrl.startsWith('http')
+      ? currentUrl.replace(/^https?:\/\/[^/]+/, base)
+      : `${base}${currentUrl.startsWith('/') ? currentUrl : `/${currentUrl}`}`;
+
+    try {
+      if (method === 'get') return await originalAxiosMethods.get(requestUrl, config);
+      if (method === 'post') return await originalAxiosMethods.post(requestUrl, payload, config);
+      if (method === 'put') return await originalAxiosMethods.put(requestUrl, payload, config);
+      if (method === 'patch') return await originalAxiosMethods.patch(requestUrl, payload, config);
+      return await originalAxiosMethods.delete(requestUrl, config);
+    } catch (error) {
+      if (!shouldRetryWithFallback(error) || index === API_BASES.length - 1) {
+        throw error;
+      }
+      currentUrl = requestUrl;
+    }
+  }
+
+  return null;
+};
+
+axios.get = (url, config) => requestWithFallback('get', url, null, config);
+axios.post = (url, payload, config) => requestWithFallback('post', url, payload, config);
+axios.put = (url, payload, config) => requestWithFallback('put', url, payload, config);
+axios.delete = (url, config) => requestWithFallback('delete', url, null, config);
+axios.patch = (url, payload, config) => requestWithFallback('patch', url, payload, config);
 axios.defaults.withCredentials = true;
 
 const formatDate = (value) => {

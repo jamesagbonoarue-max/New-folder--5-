@@ -1075,6 +1075,14 @@ function AdminPage() {
       loadDashboard(response.data.admin);
       setLoginDetails({ identifier: '', password: '' });
     } catch (error) {
+      console.error('[login-failed]', {
+        url: `${API_BASE}/auth/login`,
+        identifier: loginDetails.identifier,
+        status: error?.response?.status,
+        message: error?.message,
+        serverMessage: error?.response?.data?.message,
+        fullError: error,
+      });
       setAuthError(error.response?.data?.message || 'Unable to sign in. Check your connection and try again.');
     }
   };

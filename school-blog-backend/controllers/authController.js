@@ -54,7 +54,12 @@ const loginAdmin = async (req, res) => {
     res.cookie('token', token, cookieOptions());
     return res.json({ admin: sanitizeAdmin(admin) });
   } catch (error) {
-    console.error('Admin login failed:', error);
+    console.error('[admin-login-failed]', {
+      identifier,
+      message: error?.message,
+      stack: error?.stack,
+      body: req.body,
+    });
     return res.status(500).json({ message: 'Unable to authenticate at this time.' });
   }
 };

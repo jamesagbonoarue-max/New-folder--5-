@@ -1360,7 +1360,7 @@ function AdminPage() {
   const updateAdministrator = async (target, updates) => {
     setFormError('');
     try {
-      await axios.patch(`${API_BASE}/admin/${target._id}`, updates);
+      await axios.patch(`${API_BASE}/admin/${target.id}`, updates);
       setFormNotice('Administrator updated successfully.');
       loadDashboard(admin);
     } catch (error) {
@@ -1372,7 +1372,7 @@ function AdminPage() {
     if (!window.confirm(`Delete administrator "${target.name}"? This cannot be undone.`)) return;
     setFormError('');
     try {
-      await axios.delete(`${API_BASE}/admin/${target._id}`);
+      await axios.delete(`${API_BASE}/admin/${target.id}`);
       setFormNotice('Administrator deleted.');
       loadDashboard(admin);
     } catch (error) {

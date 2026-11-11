@@ -139,6 +139,31 @@ const formatDate = (value) => {
 
 const publishedNews = (list = []) => list.filter((item) => item.status !== 'draft');
 
+function LoadingImage({ src, alt, className = '', wrapperClassName = '', priority = false }) {
+  const [imageStatus, setImageStatus] = useState({ src: null, status: 'loading' });
+  const status = imageStatus.src === src ? imageStatus.status : 'loading';
+
+  return (
+    <span
+      className={`image-loading-shell ${wrapperClassName} is-${status}`.trim()}
+      role={status === 'error' ? 'img' : undefined}
+      aria-label={status === 'error' ? (alt || 'Image unavailable') : undefined}
+      aria-hidden={status === 'error' && !alt ? true : undefined}
+    >
+      <img
+        src={src}
+        alt={alt}
+        className={className}
+        loading={priority ? 'eager' : 'lazy'}
+        fetchPriority={priority ? 'high' : 'auto'}
+        decoding="async"
+        onLoad={() => setImageStatus({ src, status: 'loaded' })}
+        onError={() => setImageStatus({ src, status: 'error' })}
+      />
+    </span>
+  );
+}
+
 function Navbar() {
   const [open, setOpen] = useState(false);
 
@@ -329,10 +354,12 @@ function HomePage() {
           <div className="hero-panel">
             <div className="panel-card highlight-card">
               {featured[0]?.image && (
-                <img
+                <LoadingImage
                   className="hero-feature-image"
+                  wrapperClassName="hero-image-shell"
                   src={featured[0].image}
                   alt=""
+                  priority
                 />
               )}
               <div className="highlight-copy">
@@ -376,7 +403,7 @@ function HomePage() {
           <div className="news-grid featured-grid">
             {featured.map((item) => (
               <article className="news-card large" key={item._id}>
-                {item.image && <img src={item.image} alt={item.title} />}
+                {item.image && <LoadingImage src={item.image} alt={item.title} />}
                 <div className="news-content">
                   <span className="news-tag">{item.category}</span>
                   <h3>{item.title}</h3>
@@ -404,7 +431,7 @@ function HomePage() {
           <div className="news-grid stacked-grid">
             {latest.map((item) => (
               <article className="news-card compact" key={item._id}>
-                {item.image && <img src={item.image} alt={item.title} />}
+                {item.image && <LoadingImage src={item.image} alt={item.title} />}
                 <div className="news-content">
                   <span className="news-tag">{item.category}</span>
                   <h3>{item.title}</h3>
@@ -432,7 +459,7 @@ function HomePage() {
           <div className="event-grid">
             {upcomingEvents.map((event) => (
               <article className="event-card" key={event._id}>
-                {event.image && <img src={event.image} alt={event.title} />}
+                {event.image && <LoadingImage src={event.image} alt={event.title} />}
                 <div className="event-content">
                   <span className="news-tag">{event.status}</span>
                   <h3>{event.title}</h3>
@@ -460,7 +487,7 @@ function HomePage() {
           <div className="club-grid">
             {clubs.slice(0, 4).map((club) => (
               <article className="club-card" key={club._id}>
-                {club.image && <img src={club.image} alt={club.name} />}
+                {club.image && <LoadingImage src={club.image} alt={club.name} />}
                 <div className="club-content">
                   <span className="news-tag">{club.category}</span>
                   <h3>{club.name}</h3>
@@ -596,7 +623,7 @@ function NewsPage() {
         <div className="news-grid legacy-grid">
           {news.map((item) => (
             <article className="news-card compact" key={item._id}>
-              {item.image && <img src={item.image} alt={item.title} />}
+              {item.image && <LoadingImage src={item.image} alt={item.title} />}
               <div className="news-content">
                 <span className="news-tag">{item.category}</span>
                 <h3>{item.title}</h3>
@@ -662,7 +689,7 @@ function NewsDetailPage() {
   return (
     <main className="page-shell container content-page article-page">
       <article className="article-hero">
-        {article.image && <img src={article.image} alt={article.title} />}
+        {article.image && <LoadingImage src={article.image} alt={article.title} wrapperClassName="article-image-shell" priority />}
         <div className="article-header">
           <span className="news-tag">{article.category}</span>
           <h1>{article.title}</h1>
@@ -694,7 +721,7 @@ function NewsDetailPage() {
         <div className="news-grid stacked-grid">
           {relatedNews.map((item) => (
             <article className="news-card compact" key={item._id}>
-              {item.image && <img src={item.image} alt={item.title} />}
+              {item.image && <LoadingImage src={item.image} alt={item.title} />}
               <div className="news-content">
                 <span className="news-tag">{item.category}</span>
                 <h3>{item.title}</h3>
@@ -737,7 +764,7 @@ function EventsPage() {
         <div className="event-grid">
           {upcomingEvents.length === 0 ? <div className="empty-state">No upcoming events scheduled right now.</div> : upcomingEvents.map((event) => (
             <article className="event-card" key={event._id}>
-              {event.image && <img src={event.image} alt={event.title} />}
+              {event.image && <LoadingImage src={event.image} alt={event.title} />}
               <div className="event-content">
                 <h3>{event.title}</h3>
                 <p>{event.description}</p>
@@ -759,7 +786,7 @@ function EventsPage() {
         <div className="event-grid">
           {pastEvents.length === 0 ? <div className="empty-state">No past events available.</div> : pastEvents.map((event) => (
             <article className="event-card muted-card" key={event._id}>
-              {event.image && <img src={event.image} alt={event.title} />}
+              {event.image && <LoadingImage src={event.image} alt={event.title} />}
               <div className="event-content">
                 <h3>{event.title}</h3>
                 <p>{event.description}</p>
@@ -796,7 +823,7 @@ function ClubsPage() {
       <div className="club-grid detail-grid">
         {clubs.map((club) => (
           <article className="club-card" key={club._id}>
-            {club.image && <img src={club.image} alt={club.name} />}
+            {club.image && <LoadingImage src={club.image} alt={club.name} />}
             <div className="club-content">
               <span className="news-tag">{club.category}</span>
               <h3>{club.name}</h3>
@@ -1547,7 +1574,7 @@ function AdminPage() {
               <span className="image-upload-trigger">{uploadingImage ? 'Uploading image…' : 'Choose image'}</span>
               <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" onChange={(event) => handleImageUpload(event, 'news', setNewsForm)} disabled={uploadingImage} />
             </label>
-            {newsForm.image && <img className="image-upload-preview" src={newsForm.image} alt="Selected article" />}
+            {newsForm.image && <LoadingImage className="image-upload-preview" wrapperClassName="image-upload-preview-shell" src={newsForm.image} alt="Selected article" />}
             <div className="inline-fields">
               <input value={newsForm.author} onChange={(event) => setNewsForm({ ...newsForm, author: event.target.value })} placeholder="Author" />
               <select value={newsForm.category} onChange={(event) => setNewsForm({ ...newsForm, category: event.target.value })}>
@@ -1583,7 +1610,7 @@ function AdminPage() {
               <span className="image-upload-trigger">{uploadingImage ? 'Uploading image…' : 'Choose image'}</span>
               <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" onChange={(event) => handleImageUpload(event, 'events', setEventForm)} disabled={uploadingImage} />
             </label>
-            {eventForm.image && <img className="image-upload-preview" src={eventForm.image} alt="Selected event" />}
+            {eventForm.image && <LoadingImage className="image-upload-preview" wrapperClassName="image-upload-preview-shell" src={eventForm.image} alt="Selected event" />}
             <input value={eventForm.registrationLink} onChange={(event) => setEventForm({ ...eventForm, registrationLink: event.target.value })} placeholder="Registration link" />
             <label><input type="checkbox" checked={eventForm.featured} onChange={() => setEventForm({ ...eventForm, featured: !eventForm.featured })} /> Featured</label>
             <button type="submit" className="primary-btn" disabled={uploadingImage}>{editing.event ? 'Update event' : 'Create event'}</button>
@@ -1601,7 +1628,7 @@ function AdminPage() {
               <span className="image-upload-trigger">{uploadingImage ? 'Uploading image…' : 'Choose image'}</span>
               <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" onChange={(event) => handleImageUpload(event, 'clubs', setClubForm)} disabled={uploadingImage} />
             </label>
-            {clubForm.image && <img className="image-upload-preview" src={clubForm.image} alt="Selected club" />}
+            {clubForm.image && <LoadingImage className="image-upload-preview" wrapperClassName="image-upload-preview-shell" src={clubForm.image} alt="Selected club" />}
             <button type="submit" className="primary-btn" disabled={uploadingImage}>{editing.club ? 'Update club' : 'Create club'}</button>
           </form>
         </div>}

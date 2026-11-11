@@ -281,7 +281,12 @@ function Footer() {
           </div>
         </div>
       </div>
-      <div className="footer-bottom">© 2026 De Genius Talents International School (DGTIS). Established 2004.</div>
+      <div className="footer-bottom">
+        <div>© 2026 De Genius Talents International School (DGTIS). Established 2004.</div>
+        <div className="footer-attribution">
+          Powered by Edubuilder · <a href="mailto:jamesagbonoarue@gmail.com">jamesagbonoarue@gmail.com</a> · <a href="tel:+2349039376584">09039376584</a>
+        </div>
+      </div>
     </footer>
   );
 }

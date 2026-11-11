@@ -1723,6 +1723,23 @@
   font-size: 0.8rem;
 }
 
+.footer-attribution {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-top: 8px;
+}
+
+.footer-attribution a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.footer-attribution a:hover {
+  color: #f3c86a;
+}
+
 @media (max-width: 980px) {
   .hero-grid {
     grid-template-columns: minmax(0, 1fr) minmax(300px, 0.8fr);

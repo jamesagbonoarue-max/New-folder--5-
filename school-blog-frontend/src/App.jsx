@@ -295,6 +295,7 @@ function HomePage() {
   const [events, setEvents] = useState([]);
   const [clubs, setClubs] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
@@ -314,7 +315,8 @@ function HomePage() {
         setEvents([]);
         setClubs([]);
         setAnnouncements([]);
-      });
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const featured = useMemo(
@@ -416,7 +418,7 @@ function HomePage() {
                 </div>
               </article>
             ))}
-            {featured.length === 0 && <p className="empty-state">School news will appear here when published.</p>}
+            {featured.length === 0 && <p className="empty-state" role={loading ? 'status' : undefined}>{loading ? 'Loading featured stories…' : 'School news will appear here when published.'}</p>}
           </div>
         </section>
 
@@ -443,7 +445,7 @@ function HomePage() {
                 </div>
               </article>
             ))}
-            {latest.length === 0 && <p className="empty-state">There are no published updates yet.</p>}
+            {latest.length === 0 && <p className="empty-state" role={loading ? 'status' : undefined}>{loading ? 'Loading school updates…' : 'There are no published updates yet.'}</p>}
           </div>
         </section>
 
@@ -472,7 +474,7 @@ function HomePage() {
                 </div>
               </article>
             ))}
-            {upcomingEvents.length === 0 && <p className="empty-state">No upcoming events have been announced.</p>}
+            {upcomingEvents.length === 0 && <p className="empty-state" role={loading ? 'status' : undefined}>{loading ? 'Loading events…' : 'No upcoming events have been announced.'}</p>}
           </div>
         </section>
 
@@ -495,7 +497,7 @@ function HomePage() {
                 </div>
               </article>
             ))}
-            {clubs.length === 0 && <p className="empty-state">Club information will appear here when available.</p>}
+            {clubs.length === 0 && <p className="empty-state" role={loading ? 'status' : undefined}>{loading ? 'Loading clubs…' : 'Club information will appear here when available.'}</p>}
           </div>
         </section>
 
@@ -515,7 +517,7 @@ function HomePage() {
                   <span>{formatDate(item.date)}</span>
                 </div>
               ))}
-              {announcements.length === 0 && <p className="empty-state">There are no current announcements.</p>}
+              {announcements.length === 0 && <p className="empty-state" role={loading ? 'status' : undefined}>{loading ? 'Loading announcements…' : 'There are no current announcements.'}</p>}
             </div>
           </div>
         </section>
@@ -572,7 +574,7 @@ function NewsPage() {
       } finally {
         if (active) setLoading(false);
       }
-    }, 250);
+    }, query.trim() ? 250 : 0);
     return () => {
       active = false;
       clearTimeout(timer);
@@ -740,11 +742,13 @@ function NewsDetailPage() {
 
 function EventsPage() {
   const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     axios.get(`${API_BASE}/events`)
       .then((response) => setEvents(response.data || []))
-      .catch(() => setEvents([]));
+      .catch(() => setEvents([]))
+      .finally(() => setLoading(false));
   }, []);
 
   const upcomingEvents = events.filter((event) => new Date(event.date) >= new Date());
@@ -762,7 +766,7 @@ function EventsPage() {
           <h2>Upcoming events</h2>
         </div>
         <div className="event-grid">
-          {upcomingEvents.length === 0 ? <div className="empty-state">No upcoming events scheduled right now.</div> : upcomingEvents.map((event) => (
+          {upcomingEvents.length === 0 ? <div className="empty-state" role={loading ? 'status' : undefined}>{loading ? 'Loading events…' : 'No upcoming events scheduled right now.'}</div> : upcomingEvents.map((event) => (
             <article className="event-card" key={event._id}>
               {event.image && <LoadingImage src={event.image} alt={event.title} />}
               <div className="event-content">
@@ -784,7 +788,7 @@ function EventsPage() {
           <h2>Past events</h2>
         </div>
         <div className="event-grid">
-          {pastEvents.length === 0 ? <div className="empty-state">No past events available.</div> : pastEvents.map((event) => (
+          {pastEvents.length === 0 ? <div className="empty-state" role={loading ? 'status' : undefined}>{loading ? 'Loading events…' : 'No past events available.'}</div> : pastEvents.map((event) => (
             <article className="event-card muted-card" key={event._id}>
               {event.image && <LoadingImage src={event.image} alt={event.title} />}
               <div className="event-content">
@@ -805,11 +809,13 @@ function EventsPage() {
 
 function ClubsPage() {
   const [clubs, setClubs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     axios.get(`${API_BASE}/clubs`)
       .then((response) => setClubs(response.data || []))
-      .catch(() => setClubs([]));
+      .catch(() => setClubs([]))
+      .finally(() => setLoading(false));
   }, []);
 
   return (
@@ -831,7 +837,7 @@ function ClubsPage() {
             </div>
           </article>
         ))}
-        {clubs.length === 0 && <p className="empty-state">Club information will appear here when available.</p>}
+        {clubs.length === 0 && <p className="empty-state" role={loading ? 'status' : undefined}>{loading ? 'Loading clubs…' : 'Club information will appear here when available.'}</p>}
       </div>
     </main>
   );

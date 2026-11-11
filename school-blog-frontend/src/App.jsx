@@ -188,11 +188,17 @@ function Navbar() {
           className="nav-toggle"
           onClick={() => setOpen((prev) => !prev)}
           aria-label="Toggle navigation"
+          aria-expanded={open}
+          aria-controls="main-navigation"
         >
           {open ? <X size={22} /> : <Menu size={22} />}
         </button>
 
-        <nav className={`main-nav ${open ? 'open' : ''}`}>
+        <nav
+          id="main-navigation"
+          className={`main-nav ${open ? 'open' : ''}`}
+          onClick={() => setOpen(false)}
+        >
           <NavLink to="/" className={linkClass} end>
             Home
           </NavLink>

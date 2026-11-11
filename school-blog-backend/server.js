@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
+const mongoose = require('mongoose');
 
 const envConfig = dotenv.config();
 for (const [key, value] of Object.entries(envConfig.parsed || {})) {
@@ -23,6 +24,8 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const app = express();
 const PORT = process.env.PORT || 5000;
 const HOST = process.env.HOST || '0.0.0.0';
+
+if (process.env.RENDER) app.set('trust proxy', 1);
 
 const allowedOrigins = [
   process.env.CLIENT_URL,
@@ -65,7 +68,7 @@ app.use(cookieParser());
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 200,
+    max: 5000,
     standardHeaders: true,
     legacyHeaders: false,
   })
@@ -97,9 +100,40 @@ app.use((err, req, res, next) => {
 });
 
 connectDB().then(() => {
-  app.listen(PORT, HOST, () => {
+  const server = app.listen(PORT, HOST, () => {
     console.log(`Server running on http://${HOST}:${PORT}`);
   });
+
+  let shuttingDown = false;
+  const shutdown = (signal) => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    console.log(`Received ${signal}; draining HTTP requests.`);
+
+    const forceCloseTimer = setTimeout(() => {
+      console.error('Graceful shutdown timed out; closing remaining HTTP connections.');
+      server.closeAllConnections();
+    }, 10000);
+    forceCloseTimer.unref();
+
+    server.close(async (error) => {
+      clearTimeout(forceCloseTimer);
+      if (error) {
+        console.error('HTTP server shutdown failed:', error);
+        process.exitCode = 1;
+      }
+      try {
+        await mongoose.disconnect();
+      } catch (disconnectError) {
+        console.error('MongoDB shutdown failed:', disconnectError);
+        process.exitCode = 1;
+      }
+    });
+    server.closeIdleConnections();
+  };
+
+  process.once('SIGINT', () => shutdown('SIGINT'));
+  process.once('SIGTERM', () => shutdown('SIGTERM'));
 }).catch((error) => {
   console.error('Server startup failed:', error);
   process.exitCode = 1;
